@@ -1,8 +1,11 @@
 import random
 
-T = 10
-J = 10
-I = 20
+T = 30
+J = 6
+I = 10
+S = 0
+F = 30
+
 
 
 f = open("exp2.py", "w")
@@ -15,6 +18,8 @@ f.write('class index:\n')
 f.write('\tT = '+ str(T) + "\n")
 f.write('\tJ = '+ str(J) + "\n")
 f.write('\tI = '+ str(I) + "\n")
+f.write('\tS = '+ str(S) + "\n")
+f.write('\tF = '+ str(F) + "\n")
 f.write('\n')
 
 
@@ -57,6 +62,35 @@ for i in range(I):
     s = '\t('
     for j in range(J):
         s += str(random.randint(0,1)) + ', '
+    f.write(s + '),\n')
+f.write('\t)\n')
+
+
+#DS
+f.write('\n\t#disponivilidade a maquina j no tempo t')
+f.write('\n\tDS = (')
+for j in range(J):
+    s = '\t('
+    for t in range(S, F):
+        a = random.randint(0,6)
+        if a > 5:
+            s += str(1) + ', '
+        else:
+            s += str(0) + ', '
+    f.write(s + '),\n')
+f.write('\t)\n')
+
+#DE
+f.write('\n\t#dependencia da tarefa i\' da tarefa i\"')
+f.write('\n\tDE = (')
+for i in range(I):
+    s = '\t('
+    for i in range(I):
+        a = random.randint(0,6)
+        if a > 5:
+            s += str(1) + ', '
+        else:
+            s += str(0) + ', '
     f.write(s + '),\n')
 f.write('\t)')
 

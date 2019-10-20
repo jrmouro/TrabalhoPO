@@ -35,13 +35,17 @@ try:
     for j in range(exp.index.J):
         for t in range(exp.index.T):
             g1 = (x[j,i,t] for i in range(exp.index.I))
-            g2 = (x[j,i,tt] for i in range(exp.index.I) for tt in range(exp.index.T ) if tt < t if tt + exp.data.DU[i][j] > t)
-                        
-                        
-            m.addConstr(sum(g1) + sum(g2) <= 1, "c1")
-        
+            g2 = (x[j,i,tt] for i in range(exp.index.I) for tt in range(0, t ) if tt + exp.data.DU[i][j] > t)
+            m.addConstr(sum(g1) + sum(g2)  <= 1, "c1")
+     
 
-        
+    # A tarefa i só pode iniciar no tempo t se não há indisponibilidade na maquina j durante sua execução 
+    for j in range(exp.index.J):
+        for t in range(exp.index.T):
+            g1 = (x[j,i,t]*exp.data.DS[j][t] for i in range(exp.index.I))
+            g2 = (x[j,i,tt]*exp.data.DS[j][t] for i in range(exp.index.I) for tt in range(0, t) if tt + exp.data.DU[i][j] > t )
+            m.addConstr(sum(g1) + sum(g2) == 0, "c1")
+     
 
                 
 
@@ -90,6 +94,45 @@ try:
         + str(exp.data.DL[i]) + "\t" 
         + str(exp.data.DL[i]-at - du))
 
+    print('Obj: ' , m.objVal)
+
+    print('\n')
+
+    c = "  "
+    for t in range(exp.index.T):
+        
+        if t > 9:
+            c += " " + str(t)
+        else:
+            c += "  " + str(t)
+    print(c)
+    for j in range(exp.index.J):
+        l = 'M' + str(j)
+        f = []
+        for i in range(exp.index.I):
+            f.append(-1)
+        for t in range(exp.index.T):
+            a = "  ."
+            for i in range(exp.index.I):
+
+                if x[j,i,t].x > 0:
+                    a = "  " + str(i)
+                    f[i] = t
+
+                if f[i] > -1 and t < exp.data.DU[i][j]+f[i]:
+                    a = "  " + str(i)
+                else:
+                    f[i] = -1
+
+                if t < exp.data.OC[j]:
+                    a = "  #"
+                
+                if t >= exp.index.S and t < exp.index.F:
+                    if exp.data.DS[j][t - exp.index.S] == 1:
+                        a = "  %"
+
+            l += a
+        print(l)
 
 
     
