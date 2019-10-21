@@ -81,13 +81,13 @@ for j in range(J):
 f.write('\t)\n')
 
 #DE
-f.write('\n\t#dependencia da tarefa i\' da tarefa i\"')
+f.write('\n\t#dependencia temporal da tarefa i\' da tarefa i\"')
 f.write('\n\tDE = (')
 for i in range(I):
     s = '\t('
-    for i in range(I):
+    for ii in range(I):
         a = random.randint(0,6)
-        if a > 5:
+        if a > 5 and ii > i:
             s += str(1) + ', '
         else:
             s += str(0) + ', '

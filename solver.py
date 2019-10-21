@@ -31,7 +31,7 @@ try:
         
         m.addConstrs(g, "c0." + str(t))
 
-    # A tarefa i só pode iniciar no tempo t se não há outra tareja em andamento na maquina j naquele momento
+    # A tarefa i só pode iniciar no tempo t se não há outra tarefa em andamento na maquina j naquele momento
     for j in range(exp.index.J):
         for t in range(exp.index.T):
             g1 = (x[j,i,t] for i in range(exp.index.I))
@@ -47,7 +47,19 @@ try:
             m.addConstr(sum(g1) + sum(g2) == 0, "c1")
      
 
-                
+    # dependencia temporal da tarefa i da tarefa ii
+    
+    for i in range(exp.index.I):
+        for ii in range(i):
+            for t in range(exp.index.T):
+                for tt in range(t):
+                    if tt + exp.data.DU[ii][j] > t and exp.data.DE[i][ii] > 0:
+                        g2 = (x[j,i,t] for j in range(exp.index.J))
+                        m.addConstr(sum(g2) == 0, "c1")
+
+        
+           
+   
 
     # a tarefa i deve começar no tempo t > que a ociosidade da máquina j
     for t in range(exp.index.T):
@@ -66,6 +78,8 @@ try:
         for t in range(exp.index.T))
         
         m.addConstr(sum(g) == 1, "c3." + str(i))
+
+    
 
     
 
