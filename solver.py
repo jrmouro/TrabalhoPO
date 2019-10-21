@@ -12,7 +12,7 @@ try:
 
     # Set objective
     #go = (x[j,i,t]*(exp.data.DL[i] - t - exp.data.DU[i][j]) 
-    go = (x[j,i,t]*(exp.data.DL[i] - t - exp.data.DU[i][j])
+    go = (x[j,i,t]*(exp.data.DL[i] - t - exp.data.DU[i][j] + 1)
     for j in range(exp.index.J) 
     for i in range(exp.index.I) 
     for t in range(exp.index.T))
@@ -29,33 +29,34 @@ try:
         for j in range(exp.index.J) 
         for i in range(exp.index.I))
         
-        m.addConstrs(g, "c0." + str(t))
+        m.addConstrs(g, "exclu." + str(t))
 
     # A tarefa i só pode iniciar no tempo t se não há outra tarefa em andamento na maquina j naquele momento
     for j in range(exp.index.J):
         for t in range(exp.index.T):
             g1 = (x[j,i,t] for i in range(exp.index.I))
             g2 = (x[j,i,tt] for i in range(exp.index.I) for tt in range(0, t ) if tt + exp.data.DU[i][j] > t)
-            m.addConstr(sum(g1) + sum(g2)  <= 1, "c1")
+            m.addConstr(sum(g1) + sum(g2)  <= 1, "choque" + str(j) + "." + str(t))
      
 
+    
     # A tarefa i só pode iniciar no tempo t se não há indisponibilidade na maquina j durante sua execução 
     for j in range(exp.index.J):
         for t in range(exp.index.T):
             g1 = (x[j,i,t]*exp.data.DS[j][t] for i in range(exp.index.I))
             g2 = (x[j,i,tt]*exp.data.DS[j][t] for i in range(exp.index.I) for tt in range(0, t) if tt + exp.data.DU[i][j] > t )
-            m.addConstr(sum(g1) + sum(g2) == 0, "c1")
-     
+            m.addConstr(sum(g1) + sum(g2) == 0, "indisp." + str(j) + "." + str(t))
 
-    # dependencia temporal da tarefa i da tarefa ii
-    
+
+    # dependencia temporal da tarefa i da tarefa ii    
     for i in range(exp.index.I):
-        for ii in range(i):
-            for t in range(exp.index.T):
-                for tt in range(t):
-                    if tt + exp.data.DU[ii][j] > t and exp.data.DE[i][ii] > 0:
-                        g2 = (x[j,i,t] for j in range(exp.index.J))
-                        m.addConstr(sum(g2) == 0, "c1")
+        for ii in range(exp.index.I):
+            if i != ii and exp.data.DE[i][ii] > 0:
+                for ti in range(exp.index.T):   
+                    g1 = (x[j,i,ti] for j in range(exp.index.J))   
+                    g2 = (x[j,ii,tii] for j in range(exp.index.J) for tii in range(exp.index.T) if ti + exp.data.DU[i][j] > tii)
+                
+                    m.addConstr( sum(g1) + sum(g2) <= 1, "dep." + str(i) + "." + str(ii) + "." + str(ti) )
 
         
            
@@ -68,7 +69,7 @@ try:
         for j in range(exp.index.J) 
         for i in range(exp.index.I))
         
-        m.addConstrs(g, "c2." + str(t))
+        m.addConstrs(g, "ocio." + str(t))
 
     # a tarefa i deve ser executada uma única vez
     for i in range(exp.index.I):
@@ -77,7 +78,7 @@ try:
         for j in range(exp.index.J) 
         for t in range(exp.index.T))
         
-        m.addConstr(sum(g) == 1, "c3." + str(i))
+        m.addConstr(sum(g) == 1, "unic." + str(i))
 
     
 
@@ -103,10 +104,10 @@ try:
         print(str(i) + "\t" 
         + str(aj) + "\t" 
         + str(at) + "\t" 
-        + str(at + du) + "\t" 
+        + str(at + du - 1) + "\t" 
         + str(du) + "\t" 
         + str(exp.data.DL[i]) + "\t" 
-        + str(exp.data.DL[i]-at - du))
+        + str(exp.data.DL[i]-at - du + 1))
 
     print('Obj: ' , m.objVal)
 
@@ -150,7 +151,7 @@ try:
 
 
     
-    #m.write("saida.lp")
+    m.write("saida.lp")
 
     print('Obj: ' , m.objVal)
 
