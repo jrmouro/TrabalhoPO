@@ -1,6 +1,6 @@
 import random
 
-T = 3
+'''T = 3
 J = 2
 I = 3
 S = 0
@@ -11,7 +11,7 @@ J = 6
 I = 10
 S = 0
 F = 30
-'''
+
 
 
 f = open("exp2.py", "w")

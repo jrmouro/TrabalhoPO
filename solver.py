@@ -30,6 +30,21 @@ try:
         for i in range(exp.index.I))
         
         m.addConstrs(g, "exclu." + str(t))
+        
+    #Add constraints
+    # Se a tatefa i pode ser executada na máquina j
+    
+    for ii in range(exp.index.I):
+        for i in range(exp.index.I):
+            if(exp.data.DE[ii][i] == 1 and ii != i):
+                for t in range(exp.index.T):
+
+                    g1 = (x[j,i,t] for j in range(exp.index.J))
+                    g2 = (x[j,i,tt] for j in range(exp.index.J) for tt in range(0, t ) )
+
+
+
+                    m.addConstr(sum(g1) + sum(g2)  <= 1, "exclu." + str(ii) + "." + str(ii))
 
     # A tarefa i só pode iniciar no tempo t se não há outra tarefa em andamento na maquina j naquele momento
     for j in range(exp.index.J):
@@ -47,18 +62,18 @@ try:
             g2 = (x[j,i,tt]*exp.data.DS[j][t] for i in range(exp.index.I) for tt in range(0, t) if tt + exp.data.DU[i][j] > t )
             m.addConstr(sum(g1) + sum(g2) == 0, "indisp." + str(j) + "." + str(t))
 
-
+    
     # dependencia temporal da tarefa i da tarefa ii    
     for i in range(exp.index.I):
         for ii in range(exp.index.I):
             if i != ii and exp.data.DE[i][ii] > 0:
-                for ti in range(exp.index.T):   
-                    g1 = (x[j,i,ti] for j in range(exp.index.J))   
-                    g2 = (x[j,ii,tii] for j in range(exp.index.J) for tii in range(exp.index.T) if ti + exp.data.DU[i][j] > tii)
+                for tii in range(exp.index.T):   
+                    g1 = (x[j,i,ti] for j in range(exp.index.J) for ti in range(tii - exp.data.DU[i][j]+1))   
+                    g2 = (x[j,ii,tii] for j in range(exp.index.J) )
                 
-                    m.addConstr( sum(g1) + sum(g2) <= 1, "dep." + str(i) + "." + str(ii) + "." + str(ti) )
-
-        
+                    m.addConstr( sum(g1) - sum(g2) >= 0, "dep." + str(i) + "." + str(ii) + "." + str(tii) )
+    
+     
            
    
 
